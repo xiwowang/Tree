@@ -98,14 +98,27 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 		return this.value;
 	}
 
-	public V sumUp() throws Exception {
+	public int sumUp() throws Exception {
+		int count = 0;
 		if(this.childs!=null && !this.childs.isEmpty()){
 			this.value = null;
 			for(TreeNode<ID, V> node : this.childs.values()){
-				this.mergeValue( node.sumUp() );
+				count += node.sumUp();
+				this.mergeValue( node.value );
 			}
 		}
-		return this.value;
+		return count;
+	}
+	
+	public int countLeaf() {
+		int count = 0;
+		if(this.childs!=null && !this.childs.isEmpty()){
+			this.value = null;
+			for(TreeNode<ID, V> node : this.childs.values()){
+				count += node.countLeaf();
+			}
+		}
+		return count;
 	}
 	
 	public TreeNode<ID, V> find(List<ID> ids){
@@ -314,7 +327,7 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 		if(this.value!=null){
 			this.value.merge(v);
 		}else if(v!=null){
-			this.value=v.clone();
+			this.value=v.deepClone();
 		}
 	}
 	

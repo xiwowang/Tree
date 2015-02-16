@@ -1,4 +1,4 @@
-package tree.base;
+package tree.value;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,10 +50,16 @@ public class SimpleLongValue implements Collectable<SimpleLongValue>{
 		return String.valueOf(this.value);
 	}
 
-	public void breakDown(SimpleLongValue src, SimpleLongValue des, Adjustor adj) throws Exception {
-		double val = this.value * des.value / (double) src.value;
-		this.value = Math.round(val);
-		adj.register(val-this.value, this);
+	public void breakDown(SimpleLongValue src, SimpleLongValue des, Adjustor adj, int count) throws Exception {
+		if(src.value != 0){
+			double val = this.value * des.value / (double) src.value;
+			this.value = Math.round(val);
+			adj.register(val-this.value, this);
+		}else{
+			double val = des.value / (double) count;
+			this.value = Math.round(val);
+			adj.register(val-this.value, this);
+		}
 	}
 	
 	public class Adjustor{

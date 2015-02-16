@@ -16,8 +16,7 @@ import tree.intf.TreeAdapter;
 
 // 值是可运算的(继承Collectable接口)，树本身也是可运算的，可以循环嵌套
 public class DataTree<ID, V extends Collectable<V>> 
-	implements Collectable<DataTree<ID, V>>
-{
+	implements Collectable<DataTree<ID, V>>{
 	
 	protected TreeNode<ID, V> root;
 	protected List<String> hierarchy;

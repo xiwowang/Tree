@@ -8,17 +8,17 @@ import java.util.List;
 import java.util.Set;
 
 import tree.base.DataTree;
-import tree.value.SimpleLongValue;
+import tree.value.LongArrayValue;
 import tree.intf.FlatDataAdapter;
 import tree.intf.TreeAdapter;
 
-public class TreeTest {
+public class ArrayTreeTest {
 	
 	public static void main(String[] args) throws Exception{
-		LongValueDataTree<String> sdt =
-				new LongValueDataTree<String>(Arrays.asList("Division", "Gender", "Category", "Door"));
+		LongArrayDataTree<String> sdt =
+				new LongArrayDataTree<String>(Arrays.asList("Division", "Gender", "Category", "Door"), true);
 		
-		sdt.build(TreeTest.getOverviewItems(), new TreeAdapter<OverviewItem, String, SimpleLongValue>() {
+		sdt.build(ArrayTreeTest.getOverviewItems(), new TreeAdapter<OverviewItem, String, LongArrayValue>() {
 
 			@Override
 			public List<String> getHierachy(OverviewItem k) {
@@ -26,8 +26,8 @@ public class TreeTest {
 			}
 
 			@Override
-			public SimpleLongValue getValue(OverviewItem k) {
-				return new SimpleLongValue(k.bODUnits);
+			public LongArrayValue getValue(OverviewItem k) {
+				return new LongArrayValue(new long[]{k.bODUnits, k.inTransitUnits, k.transferInUnits, k.transferOutUnits});
 			}
 			
 		});
@@ -43,11 +43,11 @@ public class TreeTest {
 		set.add("S009");
 		map.put("Door", set);
 		
-		DataTree<String, SimpleLongValue> fstd = sdt.filter(map);
+		DataTree<String, LongArrayValue> fstd = sdt.filter(map);
 		
 		System.out.println(fstd.toString());
 		
-		DataTree<String, SimpleLongValue> nstd = sdt.convert(Arrays.asList("Category", "Door"));
+		DataTree<String, LongArrayValue> nstd = sdt.convert(Arrays.asList("Category", "Door"));
 
 		System.out.println(nstd.toString());
 		
@@ -55,25 +55,28 @@ public class TreeTest {
 		
 		System.out.println(nstd.toString());
 		
-		sdt.breakDown(new SimpleLongValue(100));
+		sdt.breakDown(new LongArrayValue(new long[]{100, 100, 100, 100}), new int[]{1,2});
 		System.out.println(sdt.toString());
 		
 		List<OverviewItem> list =
-				sdt.getFlatData(new FlatDataAdapter<OverviewItem, String, SimpleLongValue>() {
+				sdt.getFlatData(new FlatDataAdapter<OverviewItem, String, LongArrayValue>() {
 
-				@Override
-				public OverviewItem getData(List<String> hierarchys, List<String> ids, SimpleLongValue value) {
-					int index = hierarchys.indexOf("Door");
-					String door = ids.get(index);
-					ids.remove(index);
-					OverviewItem item =new OverviewItem();
-					item.storeNum = door;
-					item.prodattrList = ids;
-					item.bODUnits = value.value;
-					return item;
-				}
-			
-		});
+					@Override
+					public OverviewItem getData(List<String> hierarchys, List<String> ids, LongArrayValue value) {
+						int index = hierarchys.indexOf("Door");
+						String door = ids.get(index);
+						ids.remove(index);
+						OverviewItem item =new OverviewItem();
+						item.storeNum = door;
+						item.prodattrList = ids;
+						item.bODUnits = value.value[0];
+						item.inTransitUnits = value.value[1];
+						item.transferInUnits = value.value[2];
+						item.transferOutUnits = value.value[3];
+						return item;
+					}
+
+				});
 		
 		System.out.println( Arrays.toString(list.toArray()) );
 	}
