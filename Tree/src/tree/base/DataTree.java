@@ -29,8 +29,12 @@ public class DataTree<ID, V extends Collectable<V>>
 	}
 	
 	public DataTree(List<String> hierarchy, boolean isStatic){
+		this(hierarchy, isStatic, new TreeNode<ID, V>(null, null));
+	}
+	
+	public DataTree(List<String> hierarchy, boolean isStatic, TreeNode<ID, V> node){
 		this.hierarchy = new ArrayList<String>(hierarchy);
-		this.root = new TreeNode<ID, V>(null, null);
+		this.root = node;
 		this.isStatic = isStatic;
 	}
 
@@ -138,6 +142,15 @@ public class DataTree<ID, V extends Collectable<V>>
 		}
 		
 		return node;
+	}
+	
+	// 删除并将删除的节点封装成子树
+	public DataTree<ID, V> removeSubTree(List<ID> hierarchyIds) throws Exception {
+		int level = this.hierarchy.size();
+		
+		DataTree<ID, V> tree = new DataTree<ID, V>(this.hierarchy.subList(hierarchyIds.size(), level), this.isStatic);
+		tree.root = this.remove(hierarchyIds);
+		return tree;
 	}
 	
 	// 筛选, 得到符合每层ID条件的子树

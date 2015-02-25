@@ -32,7 +32,7 @@ public class LongArrayValue implements Collectable<LongArrayValue>{
 		return new LongArrayValue(newValue);
 	}
 
-	// 修改merge和minus可以使运算时(sumUp)时只计算选中的值
+	// 可以修改merge和minus可以使运算时(sumUp)时只计算选中的值
 	@Override
 	public void merge(LongArrayValue v) throws Exception {
 		if(v != null && v.value != null){
@@ -131,7 +131,7 @@ public class LongArrayValue implements Collectable<LongArrayValue>{
 				}else{
 					double firstkey = -1;
 					while(diff<0){
-						firstkey = this.adjMaps.get(i).lowerKey(firstkey);
+						firstkey = this.adjMaps.get(i).higherKey(firstkey);
 						List<LongArrayValue> list = this.adjMaps.get(i).get(firstkey);
 						for(LongArrayValue slv : list){
 							while(diff<0){

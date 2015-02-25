@@ -1,12 +1,10 @@
-package tree;
+package test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import tree.LongArrayDataTree;
 import tree.base.DataTree;
 import tree.value.LongArrayValue;
 import tree.intf.FlatDataAdapter;
@@ -33,27 +31,29 @@ public class ArrayTreeTest {
 		});
 		
 		System.out.println(sdt.toString());
-	
-		HashMap<String, Set<String>> map = new HashMap<String, Set<String>>();
-		Set<String> set = new HashSet<String>();
-		set.add("S001");
-		set.add("S002");
-		set.add("S016");
-		set.add("S015");
-		set.add("S009");
-		map.put("Door", set);
+//	
+//		HashMap<String, Set<String>> map = new HashMap<String, Set<String>>();
+//		Set<String> set = new HashSet<String>();
+//		set.add("S001");
+//		set.add("S002");
+//		set.add("S016");
+//		set.add("S015");
+//		set.add("S009");
+//		map.put("Door", set);
+//		
+//		DataTree<String, LongArrayValue> fstd = sdt.filter(map);
+//		
+//		System.out.println(fstd.toString());
+//		
+//		DataTree<String, LongArrayValue> nstd = sdt.convert(Arrays.asList("Category", "Door"));
+//
+//		System.out.println(nstd.toString());
 		
-		DataTree<String, LongArrayValue> fstd = sdt.filter(map);
+		DataTree<String, LongArrayValue> nstd = sdt.removeSubTree(Arrays.asList("Tops", "Men's", "PoloShirts"));
 		
-		System.out.println(fstd.toString());
-		
-		DataTree<String, LongArrayValue> nstd = sdt.convert(Arrays.asList("Category", "Door"));
-
 		System.out.println(nstd.toString());
 		
-		nstd = sdt.subTree(Arrays.asList("Tops", "Men's"));
-		
-		System.out.println(nstd.toString());
+		System.out.println(sdt.toString());
 		
 		sdt.breakDown(new LongArrayValue(new long[]{100, 100, 100, 100}), new int[]{1,2});
 		System.out.println(sdt.toString());

@@ -1,24 +1,46 @@
-package tree;
+package test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.TreeMap;
 
+import tree.LongValueDataTree;
 import tree.base.DataTree;
+import tree.base.TreeNode;
 import tree.value.SimpleLongValue;
-import tree.intf.FlatDataAdapter;
 import tree.intf.TreeAdapter;
 
-public class TreeTest {
+public class LongValueTreeTest {
+	
+	class SortedTreeNode extends TreeNode<String, SimpleLongValue>{
+		
+		public SortedTreeNode(String id, SimpleLongValue v) {
+			super(id, v);
+		}
+
+		@Override
+		public TreeNode<String, SimpleLongValue> newInstance(String id, SimpleLongValue v) {
+			return new SortedTreeNode(id, v);
+		}
+		
+		@Override
+		public Map<String, TreeNode<String, SimpleLongValue>> getChildMap(){
+			return new TreeMap<String, TreeNode<String, SimpleLongValue>>();
+		}
+	}
 	
 	public static void main(String[] args) throws Exception{
-		LongValueDataTree<String> sdt =
-				new LongValueDataTree<String>(Arrays.asList("Division", "Gender", "Category", "Door"));
+		LongValueTreeTest t = new LongValueTreeTest();
 		
-		sdt.build(TreeTest.getOverviewItems(), new TreeAdapter<OverviewItem, String, SimpleLongValue>() {
+		LongValueDataTree<String> sdt =
+				new LongValueDataTree<String>(Arrays.asList("Division", "Gender", "Category", "Door"), 
+						false, 
+						t.new SortedTreeNode(null, null));
+		
+		sdt.build(LongValueTreeTest.getOverviewItems(), new TreeAdapter<OverviewItem, String, SimpleLongValue>() {
 
 			@Override
 			public List<String> getHierachy(OverviewItem k) {
@@ -34,48 +56,48 @@ public class TreeTest {
 		
 		System.out.println(sdt.toString());
 	
-		HashMap<String, Set<String>> map = new HashMap<String, Set<String>>();
-		Set<String> set = new HashSet<String>();
-		set.add("S001");
-		set.add("S002");
-		set.add("S016");
-		set.add("S015");
-		set.add("S009");
-		map.put("Door", set);
+//		HashMap<String, Set<String>> map = new HashMap<String, Set<String>>();
+//		Set<String> set = new HashSet<String>();
+//		set.add("S001");
+//		set.add("S002");
+//		set.add("S016");
+//		set.add("S015");
+//		set.add("S009");
+//		map.put("Door", set);
+//		
+//		DataTree<String, SimpleLongValue> fstd = sdt.filter(map);
+//		
+//		System.out.println(fstd.toString());
+//		
+//		DataTree<String, SimpleLongValue> nstd = sdt.convert(Arrays.asList("Category", "Door"));
+//
+//		System.out.println(nstd.toString());
 		
-		DataTree<String, SimpleLongValue> fstd = sdt.filter(map);
+		DataTree<String, SimpleLongValue> nstd = sdt.subTree(Arrays.asList("Tops", "Men's"));
 		
-		System.out.println(fstd.toString());
-		
-		DataTree<String, SimpleLongValue> nstd = sdt.convert(Arrays.asList("Category", "Door"));
-
 		System.out.println(nstd.toString());
 		
-		nstd = sdt.subTree(Arrays.asList("Tops", "Men's"));
-		
-		System.out.println(nstd.toString());
-		
-		sdt.breakDown(new SimpleLongValue(100));
-		System.out.println(sdt.toString());
-		
-		List<OverviewItem> list =
-				sdt.getFlatData(new FlatDataAdapter<OverviewItem, String, SimpleLongValue>() {
-
-				@Override
-				public OverviewItem getData(List<String> hierarchys, List<String> ids, SimpleLongValue value) {
-					int index = hierarchys.indexOf("Door");
-					String door = ids.get(index);
-					ids.remove(index);
-					OverviewItem item =new OverviewItem();
-					item.storeNum = door;
-					item.prodattrList = ids;
-					item.bODUnits = value.value;
-					return item;
-				}
-			
-		});
-		
-		System.out.println( Arrays.toString(list.toArray()) );
+//		sdt.breakDown(new SimpleLongValue(100));
+//		System.out.println(sdt.toString());
+//		
+//		List<OverviewItem> list =
+//				sdt.getFlatData(new FlatDataAdapter<OverviewItem, String, SimpleLongValue>() {
+//
+//				@Override
+//				public OverviewItem getData(List<String> hierarchys, List<String> ids, SimpleLongValue value) {
+//					int index = hierarchys.indexOf("Door");
+//					String door = ids.get(index);
+//					ids.remove(index);
+//					OverviewItem item =new OverviewItem();
+//					item.storeNum = door;
+//					item.prodattrList = ids;
+//					item.bODUnits = value.value;
+//					return item;
+//				}
+//			
+//		});
+//		
+//		System.out.println( Arrays.toString(list.toArray()) );
 	}
 	
 	

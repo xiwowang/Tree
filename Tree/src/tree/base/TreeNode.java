@@ -39,9 +39,13 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 		public void doIfNotLeaf(TreeNode<ID, V> node);
 	}
 	
-	public void addChild(ID id, V v) throws Exception{
-		TreeNode<ID, V> child = new TreeNode<ID, V>(id, v);
-		this.addChild(child);
+	public void addChild(ID id, V v){
+		TreeNode<ID, V> child = this.newInstance(id, v);
+		try {
+			this.addChild(child);
+		} catch (Exception e) {
+			// never happen
+		}
 	}
 	
 	public void addChild(TreeNode<ID, V> node) throws Exception{
@@ -50,7 +54,7 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 		}
 		node.parent = this;
 		if(this.childs == null){
-			this.childs = new HashMap<ID, TreeNode<ID, V>>();
+			this.childs = this.getChildMap();
 		}
 		this.childs.put(node.id, node);
 	}
@@ -61,7 +65,6 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 		}
 		return this.childs.containsKey(id);
 	}
-	
 	
 	public TreeNode<ID, V> getChild(ID id){
 		return this.childs.get(id);
@@ -153,7 +156,7 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 			return this.clone();
 		}
 		
-		TreeNode<ID, V> curNode = new TreeNode<ID, V>(this.id, this.value);
+		TreeNode<ID, V> curNode = this.newInstance(this.id, this.value);
 		Set<ID> keySet = this.childs.keySet();
 		if(curKey == curLevel){
 			Set<ID> valueSet = criteriaMap.get(curKey);
@@ -184,6 +187,53 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 			}
 		}
 		return curNode;
+	}
+	
+	public TreeNode<ID, V> reduceLevel(List<Integer> levels){
+		TreeNode<ID, V> node = this.newInstance(this.id, this.value);
+		this.reduceLevel(node, levels, 0, levels.get(levels.size()-1));
+		return node;
+	}
+	
+	private TreeNode<ID, V> reduceLevel(TreeNode<ID, V> parent, List<Integer> levels, int curLevel, int endLevel){
+		if(endLevel == curLevel){
+			for(TreeNode<ID, V> child : this.childs.values()){
+				TreeNode<ID, V> node = this.newInstance(child.id, child.value);
+				try {
+					if(parent.hasChild(node.id)){
+						parent.getChild(node.id).merge(node);
+					}else{
+						child.parent = null;
+						parent.addChild(node);
+					}
+				} catch (Exception e) {
+					// never happen
+				}
+			}
+			return parent;
+		}
+		
+		if(levels.contains(curLevel)){
+			for(TreeNode<ID, V> child : this.childs.values()){
+				TreeNode<ID, V> node = this.newInstance(child.id, child.value);
+				child.reduceLevel(node, levels, curLevel+1, endLevel);
+				try {
+					if(parent.hasChild(node.id)){
+						parent.getChild(node.id).merge(node);
+					}else{
+						child.parent = null;
+						parent.addChild(node);
+					}
+				} catch (Exception e) {
+					// never happen
+				}
+			}
+		}else{
+			for(TreeNode<ID, V> child : this.childs.values()){
+				child.reduceLevel(parent, levels, curLevel+1, endLevel);
+			}
+		}
+		return parent;
 	}
 	
 	@Override
@@ -224,9 +274,9 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 	
 	@Override
 	public TreeNode<ID, V> clone(){
-		TreeNode<ID, V> clone = new TreeNode<ID, V>(this.id, this.value);
+		TreeNode<ID, V> clone = this.newInstance(this.id, this.value);
 		if(this.childs!=null){
-			clone.childs = new HashMap<ID, TreeNode<ID, V>>();
+			clone.childs = this.getChildMap();
 			clone.childs.putAll(this.childs);
 		}
 		return clone;
@@ -235,10 +285,10 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 	@Override
 	public TreeNode<ID, V> deepClone(){
 		if(this.childs==null || this.childs.isEmpty()){
-			return new TreeNode<ID, V>(this.id, this.value.deepClone());
+			return this.newInstance(this.id, this.value.deepClone());
 		}
 		
-		TreeNode<ID, V> clone = new TreeNode<ID, V>(this.id, this.value.deepClone());
+		TreeNode<ID, V> clone = this.newInstance(this.id, this.value.deepClone());
 		for(TreeNode<ID, V> child : this.childs.values()){
 			try {
 				clone.addChild( child.deepClone() );
@@ -251,54 +301,7 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 
 	@Override
 	public TreeNode<ID, V> getEmptyInstance() {
-		return new TreeNode<ID, V>(null, null);
-	}
-	
-	public TreeNode<ID, V> reduceLevel(List<Integer> levels){
-		TreeNode<ID, V> node = new TreeNode<ID, V>(this.id, this.value);
-		this.reduceLevel(node, levels, 0, levels.get(levels.size()-1));
-		return node;
-	}
-	
-	private TreeNode<ID, V> reduceLevel(TreeNode<ID, V> parent, List<Integer> levels, int curLevel, int endLevel){
-		if(endLevel == curLevel){
-			for(TreeNode<ID, V> child : this.childs.values()){
-				TreeNode<ID, V> node = new TreeNode<ID, V>(child.id, child.value);
-				try {
-					if(parent.hasChild(node.id)){
-						parent.getChild(node.id).merge(node);
-					}else{
-						child.parent = null;
-						parent.addChild(node);
-					}
-				} catch (Exception e) {
-					// never happen
-				}
-			}
-			return parent;
-		}
-		
-		if(levels.contains(curLevel)){
-			for(TreeNode<ID, V> child : this.childs.values()){
-				TreeNode<ID, V> node = new TreeNode<ID, V>(child.id, child.value);
-				child.reduceLevel(node, levels, curLevel+1, endLevel);
-				try {
-					if(parent.hasChild(node.id)){
-						parent.getChild(node.id).merge(node);
-					}else{
-						child.parent = null;
-						parent.addChild(node);
-					}
-				} catch (Exception e) {
-					// never happen
-				}
-			}
-		}else{
-			for(TreeNode<ID, V> child : this.childs.values()){
-				child.reduceLevel(parent, levels, curLevel+1, endLevel);
-			}
-		}
-		return parent;
+		return this.newInstance(null, null);
 	}
 	
     @Override
@@ -337,5 +340,15 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 		}else if(v!=null){
 			this.value.getEmptyInstance().minus(v.clone());
 		}
+	}
+	
+	// for Override
+	protected TreeNode<ID, V> newInstance(ID id, V v){
+		return new TreeNode<ID, V>(id, v);
+	}
+	
+	// for Override
+	public Map<ID, TreeNode<ID, V>> getChildMap(){
+		return new HashMap<ID, TreeNode<ID, V>>();
 	}
 }

@@ -19,6 +19,10 @@ public class LongValueDataTree<ID> extends DataTree<ID, SimpleLongValue>{
 		super(hierarchy, isStatic);
 	}
 	
+	public LongValueDataTree(List<String> hierarchy, boolean isStatic, TreeNode<ID, SimpleLongValue> node) {
+		super(hierarchy, isStatic, node);
+	}
+	
 	public void breakDown(final SimpleLongValue des) throws Exception{
 		
 		int leafCount = 0;

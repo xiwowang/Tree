@@ -98,7 +98,7 @@ public class SimpleLongValue implements Collectable<SimpleLongValue>{
 			}else{
 				double firstkey = -1;
 				while(diff<0){
-					firstkey = this.adjMap.lowerKey(firstkey);
+					firstkey = this.adjMap.higherKey(firstkey);
 					List<SimpleLongValue> list = this.adjMap.get(firstkey);
 					for(SimpleLongValue slv : list){
 						while(diff<0){
