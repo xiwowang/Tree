@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import tree.base.TreeNode.Recursion;
 import tree.intf.Collectable;
 import tree.intf.FlatDataAdapter;
+import tree.intf.Matcher;
 import tree.intf.TreeAdapter;
 
 // 值是可运算的(继承Collectable接口)，树本身也是可运算的，可以循环嵌套
@@ -103,7 +104,7 @@ public class DataTree<ID, V extends Collectable<V>>
 		}
 	}
 	
-	// 查找
+	// 查找,查找条件为ID
 	public TreeNode<ID, V> find(List<ID> hierarchyIds) {
 		int level = this.hierarchy.size();
 		if(hierarchyIds==null ||this.hierarchy.size()>level){
@@ -111,6 +112,16 @@ public class DataTree<ID, V extends Collectable<V>>
 		}
 		
 		return this.root.find(hierarchyIds);
+	}
+	
+	// 查找,查找条件非ID,根据提供的比较器进行ID的匹配
+	public <K> TreeNode<ID, V> find(List<K> hierarchyKeys, Matcher<ID, K> m) {
+		int level = this.hierarchy.size();
+		if(hierarchyKeys==null ||this.hierarchy.size()>level){
+			return null;
+		}
+		
+		return this.root.find(hierarchyKeys, m);
 	}
 	
 	// 查找出的节点封装成子树
@@ -122,6 +133,18 @@ public class DataTree<ID, V extends Collectable<V>>
 		
 		DataTree<ID, V> tree = new DataTree<ID, V>(this.hierarchy.subList(hierarchyIds.size(), level), this.isStatic);
 		tree.root = this.root.find(hierarchyIds);
+		return tree;
+	}
+	
+	// 查找出的节点封装成子树,查找条件非ID,根据提供的比较器进行ID的匹配
+	public <K> DataTree<ID, V> subTree(List<K> hierarchyKeys, Matcher<ID, K> m) {
+		int level = this.hierarchy.size();
+		if(hierarchyKeys==null ||this.hierarchy.size()>level){
+			return null;
+		}
+		
+		DataTree<ID, V> tree = new DataTree<ID, V>(this.hierarchy.subList(hierarchyKeys.size(), level), this.isStatic);
+		tree.root = this.root.find(hierarchyKeys, m);
 		return tree;
 	}
 	
@@ -165,6 +188,25 @@ public class DataTree<ID, V extends Collectable<V>>
 			levelCriteriaMap.put(level, entry.getValue());
 		}
 		tree.root = this.root.filter(levelCriteriaMap);
+		
+		if(tree.isStatic){
+			tree.root.sumUp();
+		}
+		return tree;
+	}
+	
+	// 筛选, 得到符合每层ID条件的子树,筛选条件不是ID的key,根据提供的比较器进行ID的匹配
+	public <K> DataTree<ID, V> filter(Map<String, Set<K>> hierarchyCriteria, Matcher<ID, K> m) throws Exception{
+		DataTree<ID, V> tree = new DataTree<ID, V>(this.hierarchy, this.isStatic);
+		TreeMap<Integer, Set<K>> levelCriteriaMap = new TreeMap<Integer, Set<K>>();
+		for(Entry<String, Set<K>> entry : hierarchyCriteria.entrySet()){
+			int level = this.hierarchy.indexOf(entry.getKey());
+			if(level < 0){
+				throw new Exception("hierarchy" + entry.getKey() +  "doesn't exist in the tree");
+			}
+			levelCriteriaMap.put(level, entry.getValue());
+		}
+		tree.root = this.root.filter(levelCriteriaMap, m);
 		
 		if(tree.isStatic){
 			tree.root.sumUp();

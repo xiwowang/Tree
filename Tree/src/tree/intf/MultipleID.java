@@ -1,10 +1,10 @@
 package tree.intf;
 
-public interface MultipleID extends Comparable<MultipleID> {
+public interface MultipleID<T> extends Comparable<T> {
 
-	public int compareTo();
+	public int compareTo(T t);
 	
-	public boolean equals();
+	public boolean equals(Object o);
 	
 	public int hashCode();
 }

@@ -3,10 +3,13 @@ package test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
+import tree.IDNumName;
 import tree.LongValueDataTree;
 import tree.base.DataTree;
 import tree.base.TreeNode;
@@ -15,36 +18,39 @@ import tree.intf.TreeAdapter;
 
 public class LongValueTreeTest {
 	
-	class SortedTreeNode extends TreeNode<String, SimpleLongValue>{
+	class SortedTreeNode extends TreeNode<IDNumName, SimpleLongValue>{
 		
-		public SortedTreeNode(String id, SimpleLongValue v) {
+		public SortedTreeNode(IDNumName id, SimpleLongValue v) {
 			super(id, v);
 		}
 
 		@Override
-		public TreeNode<String, SimpleLongValue> newInstance(String id, SimpleLongValue v) {
+		public TreeNode<IDNumName, SimpleLongValue> newInstance(IDNumName id, SimpleLongValue v) {
 			return new SortedTreeNode(id, v);
 		}
 		
 		@Override
-		public Map<String, TreeNode<String, SimpleLongValue>> getChildMap(){
-			return new TreeMap<String, TreeNode<String, SimpleLongValue>>();
+		public Map<IDNumName, TreeNode<IDNumName, SimpleLongValue>> getChildMap(){
+			return new TreeMap<IDNumName, TreeNode<IDNumName, SimpleLongValue>>();
 		}
 	}
 	
 	public static void main(String[] args) throws Exception{
 		LongValueTreeTest t = new LongValueTreeTest();
 		
-		LongValueDataTree<String> sdt =
-				new LongValueDataTree<String>(Arrays.asList("Division", "Gender", "Category", "Door"), 
+		LongValueDataTree<IDNumName> sdt =
+				new LongValueDataTree<IDNumName>(Arrays.asList("Division", "Gender", "Category", "Door"), 
 						false, 
 						t.new SortedTreeNode(null, null));
 		
-		sdt.build(LongValueTreeTest.getOverviewItems(), new TreeAdapter<OverviewItem, String, SimpleLongValue>() {
+		sdt.build(LongValueTreeTest.getOverviewItems(), new TreeAdapter<OverviewItem, IDNumName, SimpleLongValue>() {
 
 			@Override
-			public List<String> getHierachy(OverviewItem k) {
-				return Arrays.asList(k.prodattrList.get(0), k.prodattrList.get(1), k.prodattrList.get(2), k.storeNum);
+			public List<IDNumName> getHierachy(OverviewItem k) {
+				return Arrays.asList(new IDNumName(k.prodattrList.get(0), k.prodattrList.get(0), ""), 
+						new IDNumName(k.prodattrList.get(1), k.prodattrList.get(1), ""),
+						new IDNumName(k.prodattrList.get(2), k.prodattrList.get(2), ""),
+						new IDNumName(k.storeNum, k.storeNum, ""));
 			}
 
 			@Override
@@ -56,26 +62,29 @@ public class LongValueTreeTest {
 		
 		System.out.println(sdt.toString());
 	
-//		HashMap<String, Set<String>> map = new HashMap<String, Set<String>>();
-//		Set<String> set = new HashSet<String>();
-//		set.add("S001");
-//		set.add("S002");
-//		set.add("S016");
-//		set.add("S015");
-//		set.add("S009");
-//		map.put("Door", set);
-//		
-//		DataTree<String, SimpleLongValue> fstd = sdt.filter(map);
-//		
-//		System.out.println(fstd.toString());
+		HashMap<String, Set<String>> map = new HashMap<String, Set<String>>();
+		Set<String> set = new HashSet<String>();
+		set.add("S001");
+		set.add("S002");
+		set.add("S016");
+		set.add("S015");
+		set.add("S009");
+		map.put("Door", set);
+//
+		DataTree<IDNumName, SimpleLongValue> fstd = sdt.filter(map, new IDNumName.NumberMatcher());
+		
+		System.out.println(fstd.toString());
 //		
 //		DataTree<String, SimpleLongValue> nstd = sdt.convert(Arrays.asList("Category", "Door"));
 //
 //		System.out.println(nstd.toString());
 		
-		DataTree<String, SimpleLongValue> nstd = sdt.subTree(Arrays.asList("Tops", "Men's"));
-		
-		System.out.println(nstd.toString());
+//		DataTree<IDNumName, SimpleLongValue> nstd = sdt.subTree(
+//				Arrays.asList(new IDNumName("Tops","222","111"), 
+//				new IDNumName("Men's", "222", "111"),
+//				new IDNumName("PoloShirts", "222", "111")) );
+//		
+//		System.out.println(nstd.toString());
 		
 //		sdt.breakDown(new SimpleLongValue(100));
 //		System.out.println(sdt.toString());

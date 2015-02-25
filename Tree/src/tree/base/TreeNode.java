@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import tree.intf.Collectable;
+import tree.intf.Matcher;
 
 public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<TreeNode<ID, V>>{
 
@@ -140,6 +141,23 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 		}
 	}
 	
+	public <K> TreeNode<ID, V> find(List<K> keys, Matcher<ID, K> m){
+		return this.find(keys, 0, m);
+	}
+	
+	private <K> TreeNode<ID, V> find(List<K> keys, int level, Matcher<ID, K> m){
+		if(level == keys.size()){
+			return this;
+		}
+		
+		for(Entry<ID, TreeNode<ID, V>> entry : this.childs.entrySet()){
+			if( m.match(entry.getKey(), keys.get(level)) ){
+				return entry.getValue().find(keys, level+1, m);
+			}
+		}
+		return null;
+	}
+	
 	public TreeNode<ID, V> filter(TreeMap<Integer, Set<ID>> criteriaMap){
 		Integer key = null;
 		try{
@@ -181,6 +199,57 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 				TreeNode<ID, V> child = this.getChild(id);
 				try{
 					curNode.addChild( child.filter(criteriaMap, curKey, curLevel+1) );
+				}catch(Exception e){
+					// never happen
+				}
+			}
+		}
+		return curNode;
+	}
+	
+	public <K> TreeNode<ID, V> filter(TreeMap<Integer, Set<K>> criteriaMap, Matcher<ID, K> m){
+		Integer key = null;
+		try{
+			key = criteriaMap.firstKey();
+		}catch(Exception e){
+			// do nothing
+		}
+		TreeNode<ID, V> node = this.filter(criteriaMap, key, 0, m);
+		return node;
+	}
+	
+	private <K> TreeNode<ID, V> filter(TreeMap<Integer, Set<K>> criteriaMap, Integer curKey, int curLevel, Matcher<ID, K> m){
+		if(curKey == null){
+			return this.clone();
+		}
+		
+		TreeNode<ID, V> curNode = this.newInstance(this.id, this.value);
+		Set<ID> keySet = this.childs.keySet();
+		if(curKey == curLevel){
+			Set<K> valueSet = criteriaMap.get(curKey);
+			for(ID id : keySet){
+				for(K k : valueSet){
+					if( m.match(id, k) ){
+						TreeNode<ID, V> child = this.getChild(id);
+						Integer nextKey = null;
+						try{
+							nextKey = criteriaMap.higherKey(curKey);
+						}catch(Exception e){
+							// do nothing
+						}
+						try{
+							curNode.addChild( child.filter(criteriaMap, nextKey, curLevel+1, m) );
+						}catch(Exception e){
+							// never happen
+						}
+					}
+				}
+			}
+		}else{
+			for(ID id : keySet){
+				TreeNode<ID, V> child = this.getChild(id);
+				try{
+					curNode.addChild( child.filter(criteriaMap, curKey, curLevel+1, m) );
 				}catch(Exception e){
 					// never happen
 				}
