@@ -18,6 +18,11 @@ public class LongArrayDataTree<ID> extends DataTree<ID, LongArrayValue>{
 		super(hierarchy, isStatic);
 	}
 	
+	@Override
+	public DataTree<ID, LongArrayValue> newInstance(List<String> hierarchy, boolean isStatic){
+		return new LongArrayDataTree<ID>(hierarchy, isStatic);
+	}
+	
 	public void breakDown(final LongArrayValue des, final int[] indexes) throws Exception{
 		
 		int leafCount = 0;

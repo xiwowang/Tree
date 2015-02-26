@@ -1,6 +1,7 @@
 package tree.base;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -87,6 +88,16 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 		return this.id;
 	}
 	
+	public List<ID> getHierachy(){
+		ArrayList<ID> hierachys = new ArrayList<ID>();
+		TreeNode<ID, V> curNode = this;
+		while(curNode.parent!=null){
+			curNode = curNode.parent;
+			hierachys.add(curNode.id);
+		}
+		Collections.reverse(hierachys);
+		return hierachys;
+	}
 	
 	public TreeNode<ID, V> removeChild(ID id){
 		TreeNode<ID, V> node = this.childs.remove(id);

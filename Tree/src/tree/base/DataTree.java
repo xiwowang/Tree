@@ -59,7 +59,12 @@ public class DataTree<ID, V extends Collectable<V>>
 		this.isStatic = isStatic;
 	}
 
-	// 根据数据构建
+	// 重算这棵树最上层总值,同时也会在每层存储对应值
+	public void recalc() throws Exception{
+		this.root.sumUp();
+	}
+	
+	// 根据数据List构建，需要提供单个数据的转换器，即如何从数据中获得ID层级和Value
 	public <K> void build(List<K> dataList, TreeAdapter<K, ID, V> adapter) throws Exception{
 		
 		for(K data : dataList){
@@ -104,7 +109,8 @@ public class DataTree<ID, V extends Collectable<V>>
 		}
 	}
 	
-	// 查找,查找条件为ID
+	// 查找,查找到的结果是直接从原树节点拿过来的,修改了会影响到原树
+	// 查找条件为ID
 	public TreeNode<ID, V> find(List<ID> hierarchyIds) {
 		int level = this.hierarchy.size();
 		if(hierarchyIds==null ||this.hierarchy.size()>level){
@@ -114,7 +120,7 @@ public class DataTree<ID, V extends Collectable<V>>
 		return this.root.find(hierarchyIds);
 	}
 	
-	// 查找,查找条件非ID,根据提供的比较器进行ID的匹配
+	// 查找条件非ID,根据提供的比较器进行ID的匹配
 	public <K> TreeNode<ID, V> find(List<K> hierarchyKeys, Matcher<ID, K> m) {
 		int level = this.hierarchy.size();
 		if(hierarchyKeys==null ||this.hierarchy.size()>level){
@@ -131,7 +137,7 @@ public class DataTree<ID, V extends Collectable<V>>
 			return null;
 		}
 		
-		DataTree<ID, V> tree = new DataTree<ID, V>(this.hierarchy.subList(hierarchyIds.size(), level), this.isStatic);
+		DataTree<ID, V> tree = this.newInstance(this.hierarchy.subList(hierarchyIds.size(), level), this.isStatic);
 		tree.root = this.root.find(hierarchyIds);
 		return tree;
 	}
@@ -143,7 +149,7 @@ public class DataTree<ID, V extends Collectable<V>>
 			return null;
 		}
 		
-		DataTree<ID, V> tree = new DataTree<ID, V>(this.hierarchy.subList(hierarchyKeys.size(), level), this.isStatic);
+		DataTree<ID, V> tree = this.newInstance(this.hierarchy.subList(hierarchyKeys.size(), level), this.isStatic);
 		tree.root = this.root.find(hierarchyKeys, m);
 		return tree;
 	}
@@ -171,14 +177,19 @@ public class DataTree<ID, V extends Collectable<V>>
 	public DataTree<ID, V> removeSubTree(List<ID> hierarchyIds) throws Exception {
 		int level = this.hierarchy.size();
 		
-		DataTree<ID, V> tree = new DataTree<ID, V>(this.hierarchy.subList(hierarchyIds.size(), level), this.isStatic);
+		DataTree<ID, V> tree = this.newInstance(this.hierarchy.subList(hierarchyIds.size(), level), this.isStatic);
 		tree.root = this.remove(hierarchyIds);
 		return tree;
 	}
 	
-	// 筛选, 得到符合每层ID条件的子树
+	// 筛选, filter条件最低的那一层之下是从原树中clone得到的,所以底层的这些节点的父节点仍然指向原树而不是指向filter得到的树
+	// 将会导致： 依赖TreeNode.getParent()实现的功能失败，包括(不限于)： static树的增删改后自动重算高层的值, TreeNode.getHierachy
+	//                 不受影响: DataTree.getFlatData(), DataTree.convert() 它们的实现不依赖parent
+	// 这样做是为了filter之后的改动直接在原树上生效，如果不需要这样做保险起见可以在得到之后用deepClone得到新树，不会产生副作用
+	// (将filter得到的树理解成是原树的一个筛选后的视图，修改在原树上生效，而这个视图的刷新需要手动调用recalc刷新上层的值)
+	// 得到符合每层ID条件的子树
 	public DataTree<ID, V> filter(Map<String, Set<ID>> hierarchyCriteria) throws Exception{
-		DataTree<ID, V> tree = new DataTree<ID, V>(this.hierarchy, this.isStatic);
+		DataTree<ID, V> tree = this.newInstance(this.hierarchy, this.isStatic);
 		TreeMap<Integer, Set<ID>> levelCriteriaMap = new TreeMap<Integer, Set<ID>>();
 		for(Entry<String, Set<ID>> entry : hierarchyCriteria.entrySet()){
 			int level = this.hierarchy.indexOf(entry.getKey());
@@ -197,7 +208,7 @@ public class DataTree<ID, V extends Collectable<V>>
 	
 	// 筛选, 得到符合每层ID条件的子树,筛选条件不是ID的key,根据提供的比较器进行ID的匹配
 	public <K> DataTree<ID, V> filter(Map<String, Set<K>> hierarchyCriteria, Matcher<ID, K> m) throws Exception{
-		DataTree<ID, V> tree = new DataTree<ID, V>(this.hierarchy, this.isStatic);
+		DataTree<ID, V> tree = this.newInstance(this.hierarchy, this.isStatic);
 		TreeMap<Integer, Set<K>> levelCriteriaMap = new TreeMap<Integer, Set<K>>();
 		for(Entry<String, Set<K>> entry : hierarchyCriteria.entrySet()){
 			int level = this.hierarchy.indexOf(entry.getKey());
@@ -214,7 +225,7 @@ public class DataTree<ID, V extends Collectable<V>>
 		return tree;
 	}
 	
-	// 将树型转变成对象的List
+	// 将树型转变成对象的List，需要提供单个数据的转换器，即如何从ID层级和Value中获得单个数据
 	public <K> List<K> getFlatData(final FlatDataAdapter<K, ID, V> adp){
 		final List<K> list = new ArrayList<K>();
 		final List<String> hierarchy = new ArrayList<String>(this.hierarchy);
@@ -252,7 +263,7 @@ public class DataTree<ID, V extends Collectable<V>>
     		levels.add(level);
     	}
 		
-		final DataTree<ID, V> tree = new DataTree<ID, V>(newHierarchy, this.isStatic);
+		final DataTree<ID, V> tree = this.newInstance(newHierarchy, this.isStatic);
 		final List<ID> ids = new ArrayList<ID>();
 		
 		this.root.recursion(new Recursion<ID, V>(){
@@ -329,23 +340,26 @@ public class DataTree<ID, V extends Collectable<V>>
 		this.root.minus(sdt.root);
 	}
 
+	public DataTree<ID, V> newInstance(List<String> hierarchy, boolean isStatic){
+		return new DataTree<ID, V>(hierarchy, isStatic);
+	}
 
 	@Override
 	public DataTree<ID, V> getEmptyInstance() {
-		DataTree<ID, V> sdt = new DataTree<ID, V>(this.hierarchy, this.isStatic);
+		DataTree<ID, V> sdt = this.newInstance(this.hierarchy, this.isStatic);
 		return sdt;
 	}
 
 	@Override
 	public DataTree<ID, V> clone() {
-		DataTree<ID, V> sdt = new DataTree<ID, V>(this.hierarchy, this.isStatic);
+		DataTree<ID, V> sdt = this.newInstance(this.hierarchy, this.isStatic);
 		sdt.root = this.root.clone();
 		return sdt;
 	}
 
 	@Override
 	public DataTree<ID, V> deepClone() {
-		DataTree<ID, V> sdt = new DataTree<ID, V>(this.hierarchy, this.isStatic);
+		DataTree<ID, V> sdt = this.newInstance(this.hierarchy, this.isStatic);
 		sdt.root = this.root.deepClone();
 		return sdt;
 	}

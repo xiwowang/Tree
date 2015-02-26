@@ -5,7 +5,7 @@ import java.util.List;
 import tree.base.DataTree;
 import tree.base.TreeNode;
 import tree.base.TreeNode.Recursion;
-
+import tree.value.LongArrayValue;
 import tree.value.SimpleLongValue;
 import tree.value.SimpleLongValue.Adjustor;
 
@@ -21,6 +21,11 @@ public class LongValueDataTree<ID> extends DataTree<ID, SimpleLongValue>{
 	
 	public LongValueDataTree(List<String> hierarchy, boolean isStatic, TreeNode<ID, SimpleLongValue> node) {
 		super(hierarchy, isStatic, node);
+	}
+	
+	@Override
+	public DataTree<ID, SimpleLongValue> newInstance(List<String> hierarchy, boolean isStatic){
+		return new LongValueDataTree<ID>(hierarchy, isStatic);
 	}
 	
 	public void breakDown(final SimpleLongValue des) throws Exception{

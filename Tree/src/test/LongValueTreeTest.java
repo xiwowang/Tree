@@ -71,9 +71,15 @@ public class LongValueTreeTest {
 		set.add("S009");
 		map.put("Door", set);
 //
-		DataTree<IDNumName, SimpleLongValue> fstd = sdt.filter(map, new IDNumName.NumberMatcher());
+		LongValueDataTree<IDNumName> fsdt = (LongValueDataTree<IDNumName>) sdt.filter(map, new IDNumName.NumberMatcher());
 		
-		System.out.println(fstd.toString());
+		System.out.println(fsdt.toString());
+		
+		fsdt.breakDown(new SimpleLongValue(100L));
+		
+		System.out.println(fsdt.toString());
+		System.out.println(sdt.toString());
+		
 //		
 //		DataTree<String, SimpleLongValue> nstd = sdt.convert(Arrays.asList("Category", "Door"));
 //
