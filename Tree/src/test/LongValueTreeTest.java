@@ -80,10 +80,10 @@ public class LongValueTreeTest {
 		System.out.println(fsdt.toString());
 		System.out.println(sdt.toString());
 		
-//		
-//		DataTree<String, SimpleLongValue> nstd = sdt.convert(Arrays.asList("Category", "Door"));
-//
-//		System.out.println(nstd.toString());
+		
+		DataTree<IDNumName, SimpleLongValue> nstd = sdt.convert(Arrays.asList("Category", "Door"));
+
+		System.out.println(nstd.toString());
 		
 //		DataTree<IDNumName, SimpleLongValue> nstd = sdt.subTree(
 //				Arrays.asList(new IDNumName("Tops","222","111"), 
@@ -91,7 +91,7 @@ public class LongValueTreeTest {
 //				new IDNumName("PoloShirts", "222", "111")) );
 //		
 //		System.out.println(nstd.toString());
-		
+//		
 //		sdt.breakDown(new SimpleLongValue(100));
 //		System.out.println(sdt.toString());
 //		

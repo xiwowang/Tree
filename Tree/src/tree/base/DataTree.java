@@ -109,7 +109,7 @@ public class DataTree<ID, V extends Collectable<V>>
 		}
 	}
 	
-	// 查找,查找到的结果是直接从原树节点拿过来的,修改了会影响到原树
+	// 查找,查找到的结果是直接从原树节点拿过来的,修改了会影响到原树,如果需要与原树脱离关系需要deepClone
 	// 查找条件为ID
 	public TreeNode<ID, V> find(List<ID> hierarchyIds) {
 		int level = this.hierarchy.size();
@@ -130,6 +130,7 @@ public class DataTree<ID, V extends Collectable<V>>
 		return this.root.find(hierarchyKeys, m);
 	}
 	
+	// 子树,树的节点是直接从原树节点拿过来的,修改了会影响到原树,如果需要与原树脱离关系需要deepClone
 	// 查找出的节点封装成子树
 	public DataTree<ID, V> subTree(List<ID> hierarchyIds) {
 		int level = this.hierarchy.size();
@@ -183,9 +184,9 @@ public class DataTree<ID, V extends Collectable<V>>
 	}
 	
 	// 筛选, filter条件最低的那一层之下是从原树中clone得到的,所以底层的这些节点的父节点仍然指向原树而不是指向filter得到的树
-	// 将会导致： 依赖TreeNode.getParent()实现的功能失败，包括(不限于)： static树的增删改后自动重算高层的值, TreeNode.getHierachy
+	// 如果需要与原树脱离关系需要deepClone
+	// 将会导致： 依赖TreeNode.getParent()实现的功能失败，包括(不限于)： static树的增删改后自动重算高层的值
 	//                 不受影响: DataTree.getFlatData(), DataTree.convert() 它们的实现不依赖parent
-	// 这样做是为了filter之后的改动直接在原树上生效，如果不需要这样做保险起见可以在得到之后用deepClone得到新树，不会产生副作用
 	// (将filter得到的树理解成是原树的一个筛选后的视图，修改在原树上生效，而这个视图的刷新需要手动调用recalc刷新上层的值)
 	// 得到符合每层ID条件的子树
 	public DataTree<ID, V> filter(Map<String, Set<ID>> hierarchyCriteria) throws Exception{
