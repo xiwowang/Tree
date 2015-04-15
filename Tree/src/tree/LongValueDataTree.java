@@ -1,3 +1,4 @@
+
 package tree;
 
 import java.util.List;
@@ -5,10 +6,14 @@ import java.util.List;
 import tree.base.DataTree;
 import tree.base.TreeNode;
 import tree.base.TreeNode.Recursion;
-import tree.value.LongArrayValue;
 import tree.value.SimpleLongValue;
 import tree.value.SimpleLongValue.Adjustor;
 
+/**
+ * @version Change History:
+ * @version <2>    03/16/15 MQ  Revisit for EN #17470: [CMM-Allocation]Allocation CategoryPlan part. (Mizzle Qiu)
+ * @version <1>    03/03/15 MQ  First Written for Sub-EN #15800: based on the updated WF. (Mizzle Qiu)
+ */
 public class LongValueDataTree<ID> extends DataTree<ID, SimpleLongValue>{
 
 	public LongValueDataTree(List<String> hierarchy) {
@@ -37,7 +42,6 @@ public class LongValueDataTree<ID> extends DataTree<ID, SimpleLongValue>{
 		
 		final SimpleLongValue src = this.root.getValue().deepClone();
 		
-		// 如果总数是0则均分,总数是0时才需要计算个数
 		if(src.value==0){
 			if(this.isStatic){
 				leafCount = this.root.countLeaf();
@@ -53,8 +57,7 @@ public class LongValueDataTree<ID> extends DataTree<ID, SimpleLongValue>{
 				try {
 					node.getValue().breakDown(src, des, adj, count);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					// won't happen
 				}
 			}
 

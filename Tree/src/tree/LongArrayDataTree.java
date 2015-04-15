@@ -1,3 +1,4 @@
+
 package tree;
 
 import java.util.List;
@@ -8,6 +9,10 @@ import tree.base.TreeNode.Recursion;
 import tree.value.LongArrayValue;
 import tree.value.LongArrayValue.Adjustor;
 
+/**
+ * @version Change History:
+ * @version <1>    03/03/15 MQ  First Written for Sub-EN #15800: based on the updated WF. (Mizzle Qiu)
+ */
 public class LongArrayDataTree<ID> extends DataTree<ID, LongArrayValue>{
 	
 	public LongArrayDataTree(List<String> hierarchy) {
@@ -35,7 +40,7 @@ public class LongArrayDataTree<ID> extends DataTree<ID, LongArrayValue>{
 		}
 		
 		final LongArrayValue src = this.root.getValue().deepClone();
-		// 如果总数是0则均分,总数是0时才需要计算个数
+		// If the summary is 0, count the leaf''s number and average the target number
 		if(this.isStatic){
 			for(int index : indexes){
 				if(src.value[index] == 0){

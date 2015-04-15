@@ -41,6 +41,21 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 		public void doIfNotLeaf(TreeNode<ID, V> node);
 	}
 	
+	public void setId(ID id){
+		if(this.parent==null){
+			this.id = id;
+		}else{
+			TreeNode<ID, V> parentNode = this.parent;
+			parentNode.removeChild(this.id);
+			this.setId(id);
+			try {
+				parentNode.addChild(this);
+			} catch (Exception e) {
+				// never happen
+			}
+		}
+	}
+	
 	public void addChild(ID id, V v){
 		TreeNode<ID, V> child = this.newInstance(id, v);
 		try {
@@ -69,10 +84,16 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 	}
 	
 	public TreeNode<ID, V> getChild(ID id){
+		if(this.childs==null){
+			return null;
+		}
 		return this.childs.get(id);
 	}
 	
 	public List<TreeNode<ID, V>> getChilds(){
+		if(this.childs==null){
+			return null;
+		}
 		return new ArrayList<TreeNode<ID, V>>(this.childs.values());
 	}
 	
@@ -92,8 +113,8 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 		ArrayList<ID> hierachys = new ArrayList<ID>();
 		TreeNode<ID, V> curNode = this;
 		while(curNode.parent!=null){
-			curNode = curNode.parent;
 			hierachys.add(curNode.id);
+			curNode = curNode.parent;
 		}
 		Collections.reverse(hierachys);
 		return hierachys;
@@ -114,24 +135,27 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 	}
 
 	public int sumUp() throws Exception {
+		if(this.childs==null || this.childs.isEmpty()){
+			return 1;
+		}
+		
 		int count = 0;
-		if(this.childs!=null && !this.childs.isEmpty()){
-			this.value = null;
-			for(TreeNode<ID, V> node : this.childs.values()){
-				count += node.sumUp();
-				this.mergeValue( node.value );
-			}
+		this.value = null;
+		for(TreeNode<ID, V> node : this.childs.values()){
+			count += node.sumUp();
+			this.mergeValue( node.value );
 		}
 		return count;
 	}
 	
 	public int countLeaf() {
+		if(this.childs==null || this.childs.isEmpty()){
+			return 1;
+		}
+		
 		int count = 0;
-		if(this.childs!=null && !this.childs.isEmpty()){
-			this.value = null;
-			for(TreeNode<ID, V> node : this.childs.values()){
-				count += node.countLeaf();
-			}
+		for(TreeNode<ID, V> node : this.childs.values()){
+			count += node.countLeaf();
 		}
 		return count;
 	}
@@ -181,11 +205,12 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 	}
 	
 	private TreeNode<ID, V> filter(TreeMap<Integer, Set<ID>> criteriaMap, Integer curKey, int curLevel){
-		if(curKey == null){
+		if(curKey == null || this.childs==null || this.childs.isEmpty()){
 			return this.clone();
 		}
 		
 		TreeNode<ID, V> curNode = this.newInstance(this.id, this.value);
+		
 		Set<ID> keySet = this.childs.keySet();
 		if(curKey == curLevel){
 			Set<ID> valueSet = criteriaMap.get(curKey);
@@ -195,11 +220,10 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 					Integer nextKey = null;
 					try{
 						nextKey = criteriaMap.higherKey(curKey);
-					}catch(Exception e){
-						// do nothing
-					}
-					try{
-						curNode.addChild( child.filter(criteriaMap, nextKey, curLevel+1) );
+						TreeNode<ID, V> filteredChild = child.filter(criteriaMap, nextKey, curLevel+1);
+						if(nextKey==null || (filteredChild!=null && (filteredChild.childs!=null && !filteredChild.childs.isEmpty()))){
+							curNode.addChild( filteredChild );
+						}
 					}catch(Exception e){
 						// never happen
 					}
@@ -209,7 +233,10 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 			for(ID id : keySet){
 				TreeNode<ID, V> child = this.getChild(id);
 				try{
-					curNode.addChild( child.filter(criteriaMap, curKey, curLevel+1) );
+					TreeNode<ID, V> filteredChild = child.filter(criteriaMap, curKey, curLevel+1);
+					if(filteredChild!=null && (filteredChild.childs!=null && !filteredChild.childs.isEmpty())){
+						curNode.addChild( filteredChild );
+					}
 				}catch(Exception e){
 					// never happen
 				}
@@ -230,7 +257,7 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 	}
 	
 	private <K> TreeNode<ID, V> filter(TreeMap<Integer, Set<K>> criteriaMap, Integer curKey, int curLevel, Matcher<ID, K> m){
-		if(curKey == null){
+		if(curKey == null || this.childs==null || this.childs.isEmpty()){
 			return this.clone();
 		}
 		
@@ -245,11 +272,10 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 						Integer nextKey = null;
 						try{
 							nextKey = criteriaMap.higherKey(curKey);
-						}catch(Exception e){
-							// do nothing
-						}
-						try{
-							curNode.addChild( child.filter(criteriaMap, nextKey, curLevel+1, m) );
+							TreeNode<ID, V> filteredChild = child.filter(criteriaMap, nextKey, curLevel+1, m);
+							if(nextKey==null || (filteredChild!=null && (filteredChild.childs!=null && !filteredChild.childs.isEmpty()))){
+								curNode.addChild( filteredChild );
+							}
 						}catch(Exception e){
 							// never happen
 						}
@@ -260,7 +286,10 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 			for(ID id : keySet){
 				TreeNode<ID, V> child = this.getChild(id);
 				try{
-					curNode.addChild( child.filter(criteriaMap, curKey, curLevel+1, m) );
+					TreeNode<ID, V> filteredChild = child.filter(criteriaMap, curKey, curLevel+1, m);
+					if(filteredChild!=null && (filteredChild.childs!=null && !filteredChild.childs.isEmpty())){
+						curNode.addChild( filteredChild );
+					}
 				}catch(Exception e){
 					// never happen
 				}
@@ -320,15 +349,11 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 	public void merge(TreeNode<ID, V> node) throws Exception{
 		if(this.childs==null || this.childs.isEmpty()){
 			this.mergeValue(node.value);
+			return;
 		}
 		
 		Set<ID> set = new HashSet<ID>(node.childs.keySet());
 		set.removeAll(this.childs.keySet());
-		
-		for (Iterator<ID> iterator = set.iterator(); iterator.hasNext();) {
-			ID id = iterator.next();
-			this.addChild(node.getChild(id).clone());
-		}
 		
 		for(Entry<ID, TreeNode<ID, V>> entry : this.childs.entrySet()){
 			ID key = entry.getKey();
@@ -336,12 +361,18 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 				entry.getValue().merge(node.getChild(key));
 			}
 		}
+		
+		for (Iterator<ID> iterator = set.iterator(); iterator.hasNext();) {
+			ID id = iterator.next();
+			this.addChild(node.getChild(id).clone());
+		}
 	}
 	
 	@Override
 	public void minus(TreeNode<ID, V> node) throws Exception{
 		if(this.childs==null || this.childs.isEmpty()){
 			this.value.minus(node.value);
+			return;
 		}
 		
 		for(Entry<ID, TreeNode<ID, V>> entry : this.childs.entrySet()){
@@ -368,7 +399,12 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
 			return this.newInstance(this.id, this.value.deepClone());
 		}
 		
-		TreeNode<ID, V> clone = this.newInstance(this.id, this.value.deepClone());
+		TreeNode<ID, V> clone;
+		if(this.value!=null){
+			clone = this.newInstance(this.id, this.value.deepClone());
+		}else{
+			clone = this.newInstance(this.id, null);
+		}
 		for(TreeNode<ID, V> child : this.childs.values()){
 			try {
 				clone.addChild( child.deepClone() );
@@ -391,12 +427,11 @@ public class TreeNode <ID, V extends Collectable<V>>  implements Collectable<Tre
     }
     
     public String toString(StringBuilder uStrBuilder, String indent){
-    	indent = "  " + indent;
     	
     	if(this.childs!=null && !this.childs.isEmpty()){
     		uStrBuilder.append(indent).append(this.id).append("=").append(this.value).append("\n");
     		for(TreeNode<ID,V> child : this.childs.values()){
-    			child.toString(uStrBuilder, indent);
+    			child.toString(uStrBuilder, "  " + indent);
     		}
     	}else{
     		uStrBuilder.append(indent).append(this.id).append("=").append(this.value).append("\n");

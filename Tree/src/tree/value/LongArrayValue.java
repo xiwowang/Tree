@@ -1,3 +1,4 @@
+
 package tree.value;
 
 import java.util.ArrayList;
@@ -7,6 +8,10 @@ import java.util.TreeMap;
 
 import tree.intf.Collectable;
 
+/**
+ * @version Change History:
+ * @version <1>    03/03/15 MQ  First Written for Sub-EN #15800: based on the updated WF. (Mizzle Qiu)
+ */
 public class LongArrayValue implements Collectable<LongArrayValue>{
 	
 	public long[] value;
@@ -32,7 +37,7 @@ public class LongArrayValue implements Collectable<LongArrayValue>{
 		return new LongArrayValue(newValue);
 	}
 
-	// 可以修改merge和minus可以使运算时(sumUp)时只计算选中的值
+	// May need to override merge and minus to merge the average/percentage etc. data.
 	@Override
 	public void merge(LongArrayValue v) throws Exception {
 		if(v != null && v.value != null){
@@ -93,10 +98,10 @@ public class LongArrayValue implements Collectable<LongArrayValue>{
 		public Adjustor(int[] indexes){
 			super();
 			this.indexes = indexes;
-			curSum = new long[indexes.length];
+			this.curSum = new long[indexes.length];
 			for(int i=0; i<indexes.length; i++){
-				adjMaps.add(new TreeMap<Double, List<LongArrayValue>>());
-				curSum[i] = 0;
+				this.adjMaps.add(new TreeMap<Double, List<LongArrayValue>>());
+				this.curSum[i] = 0;
 			}
 		}
 		
