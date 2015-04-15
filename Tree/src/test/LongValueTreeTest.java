@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import tree.IDNumName;
+import tree.id.IDNumName;
 import tree.LongValueDataTree;
 import tree.base.DataTree;
 import tree.base.TreeNode;
@@ -46,7 +46,7 @@ public class LongValueTreeTest {
 		sdt.build(LongValueTreeTest.getOverviewItems(), new TreeAdapter<OverviewItem, IDNumName, SimpleLongValue>() {
 
 			@Override
-			public List<IDNumName> getHierachy(OverviewItem k) {
+			public List<IDNumName> getHierarchy(OverviewItem k) {
 				return Arrays.asList(new IDNumName(k.prodattrList.get(0), k.prodattrList.get(0), ""), 
 						new IDNumName(k.prodattrList.get(1), k.prodattrList.get(1), ""),
 						new IDNumName(k.prodattrList.get(2), k.prodattrList.get(2), ""),
@@ -57,7 +57,6 @@ public class LongValueTreeTest {
 			public SimpleLongValue getValue(OverviewItem k) {
 				return new SimpleLongValue(k.bODUnits);
 			}
-			
 		});
 		
 		System.out.println(sdt.toString());

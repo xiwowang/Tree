@@ -9,10 +9,6 @@ import tree.base.TreeNode.Recursion;
 import tree.value.LongArrayValue;
 import tree.value.LongArrayValue.Adjustor;
 
-/**
- * @version Change History:
- * @version <1>    03/03/15 MQ  First Written for Sub-EN #15800: based on the updated WF. (Mizzle Qiu)
- */
 public class LongArrayDataTree<ID> extends DataTree<ID, LongArrayValue>{
 	
 	public LongArrayDataTree(List<String> hierarchy) {

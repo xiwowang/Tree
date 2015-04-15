@@ -19,7 +19,7 @@ public class ArrayTreeTest {
 		sdt.build(ArrayTreeTest.getOverviewItems(), new TreeAdapter<OverviewItem, String, LongArrayValue>() {
 
 			@Override
-			public List<String> getHierachy(OverviewItem k) {
+			public List<String> getHierarchy(OverviewItem k) {
 				return Arrays.asList(k.prodattrList.get(0), k.prodattrList.get(1), k.prodattrList.get(2), k.storeNum);
 			}
 

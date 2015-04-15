@@ -9,11 +9,6 @@ import tree.base.TreeNode.Recursion;
 import tree.value.SimpleLongValue;
 import tree.value.SimpleLongValue.Adjustor;
 
-/**
- * @version Change History:
- * @version <2>    03/16/15 MQ  Revisit for EN #17470: [CMM-Allocation]Allocation CategoryPlan part. (Mizzle Qiu)
- * @version <1>    03/03/15 MQ  First Written for Sub-EN #15800: based on the updated WF. (Mizzle Qiu)
- */
 public class LongValueDataTree<ID> extends DataTree<ID, SimpleLongValue>{
 
 	public LongValueDataTree(List<String> hierarchy) {

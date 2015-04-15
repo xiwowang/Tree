@@ -17,12 +17,6 @@ import tree.intf.FlatDataAdapter;
 import tree.intf.Matcher;
 import tree.intf.TreeAdapter;
 
-/**
- * @version Change History:
- * @version <3>    03/20/15 FY  Revisit for EN #17470: [CMM-Allocation]Allocation CategoryPlan part. (Felix Yu)
- * @version <2>    03/12/15 MQ  Revisit for Sub-EN #15800: based on the updated WF. (Mizzle Qiu)
- * @version <1>    03/03/15 MQ  First Written for Sub-EN #15800: based on the updated WF. (Mizzle Qiu)
- */
 public class DataTree<ID, V extends Collectable<V>> 
 	implements Collectable<DataTree<ID, V>>{
 	
